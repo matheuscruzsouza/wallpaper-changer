@@ -1,0 +1,59 @@
+{
+  "applicationId": "js.neutralino.base.app",
+  "defaultMode": "window",
+  "port": 0,
+  "url": "/resources/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": true
+  },
+  "nativeBlockList": [],
+  "globalVariables": {
+    "DESKTOP_TEMPLATE_APP": "1.0.0.0"
+  },
+  "modes": {
+    "window": {
+      "title": "Wallpaper Changer",
+      "width": 800,
+      "height": 500,
+      "minWidth": 400,
+      "minHeight": 200,
+      "fullScreen": false,
+      "alwaysOnTop": false,
+      "icon": "/resources/assets/icons/appIcon.png",
+      "enableInspector": true,
+      "borderless": false,
+      "maximize": false,
+      "hidden": false,
+      "resizable": true,
+      "exitProcessOnClose": false
+    },
+    "browser": {
+      "globalVariables": {
+        "TEST": "Test value browser"
+      },
+      "nativeBlockList": [
+        "filesystem.*"
+      ]
+    },
+    "cloud": {
+      "url": "/resources/#cloud",
+      "nativeAllowList": [
+        "app.*"
+      ]
+    }
+  },
+  "cli": {
+    "binaryName": "wallpaper-changer",
+    "resourcesPath": "/resources/",
+    "clientLibrary": "/resources/neutralino.js",
+    "binaryVersion": "3.0.0",
+    "clientVersion": "2.0.0",
+    "frontendLibrary": {
+      "patchFile": "/application/src/index.html",
+      "devUrl": "http://localhost:4200"
+    }
+  }
+}
