@@ -14,6 +14,7 @@ Here are the technologies used in this project.
 - [Angular](https://github.com/angular/angular) version 13.0.3
 - [neu CLI](https://github.com/neutralinojs/neutralinojs-cli) version 7.1.0
 - [Node](https://github.com/nodejs/node) version 17.2.0
+- [Golang](https://github.com/golang/go) version 1.15.2
 
 ## Services Used
 
