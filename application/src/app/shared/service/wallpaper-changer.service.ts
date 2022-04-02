@@ -1,7 +1,8 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Output } from '@angular/core';
 import { NotificationService } from './notification.service';
 
 declare const Neutralino: any;
+declare const NL_PATH: string;
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ export class WallpaperChangerService {
 
   public nextWallpaper = new EventEmitter(false);
   public previousWallpaper = new EventEmitter(false);
+  @Output("selectedImage") selectedImage = new EventEmitter();
 
   private wallpapers: any[] = [];
   private currentWallpaper = 0
@@ -66,63 +68,53 @@ export class WallpaperChangerService {
       if (data) {
         const image = document.createElement('img');
         image.onload = () => wrapper?.appendChild(image);
-        image.onclick = () => this.setAsWallpaper(path);
+        array[index].base64 = data;
+        image.onclick = () => { this.selectedImage.emit(array[index]) };
+        image.classList.add("add-margin");
+        image.style.margin="0 5px";
         image.src = data;
 
         console.log("LOADED BY STORAGE");
 
-        this.loader.emit(index + 1);
+        this.callNext(index);
 
         return;
       }
 
     } catch (error) {
-      let data = await Neutralino.filesystem.readBinaryFile(path, { background: true });
 
       console.log("NOT LOADED BY STORAGE");
 
-      if (data) {
-        let blob = new Blob([new Uint8Array(data)], {'type': `image/${path.split('.')[1]}`});
-        this.reader = new FileReader();
-        this.reader.onloadend = () => {
-          if (typeof this.reader.result == 'string') {
-            let _image = new Image();
-            _image.onload = (event) => this.resizeMe(event.target, wrapper, path, index);
-            _image.src = this.reader.result;
-          }
-        };
-        this.reader.readAsDataURL(blob);
-      }
+      this.resizeMe(wrapper, path, index, array[index]);
+
     }
 
   }
 
-  resizeMe(_image: any, wrapper: any, path: string, index: number) {
-    const canvas = document.createElement('canvas');
-    let max_size = 200, width = _image.width, height = _image.height;
-    if (width > height) {
-        if (width > max_size) {
-            height *= max_size / width;
-            width = max_size;
-        }
-    } else {
-        if (height > max_size) {
-            width *= max_size / height;
-            height = max_size;
-        }
-    }
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.drawImage(_image, 0, 0, width, height);
-      const image = document.createElement('img');
-      image.onload = () => wrapper?.appendChild(image);
-      image.onclick = () => this.setAsWallpaper(path);
-      const dataURL = canvas.toDataURL('image/jpeg', 0.5);
-      image.src = dataURL;
-      Neutralino.storage.setData(path.split('/').reverse()[0].split('.')[0], dataURL);
+  async resizeMe(wrapper: any, path: string, index: number, object: any) {
 
+    const image = document.createElement('img');
+    const dataURL = await this.loadImage(path);
+    object.base64 = dataURL;
+    image.onload = () => wrapper?.appendChild(image);
+    image.onclick = () => { this.selectedImage.emit(object) };
+    image.classList.add("add-margin");
+    image.style.margin="0 5px";
+    image.width = 200;
+    image.src = dataURL;
+
+    Neutralino.storage.setData(path.split('/').reverse()[0].split('.')[0], dataURL);
+
+    this.callNext(index);
+
+  }
+
+  async loadImage(path: string, quality: number = 200) {
+    return Neutralino.os.execCommand(NL_PATH + `/resize ${path} ${quality}`, { background: true });
+  }
+
+  callNext(index: number) {
+    if (index + 1 < this.images.length) {
       this.loader.emit(index + 1);
     }
   }

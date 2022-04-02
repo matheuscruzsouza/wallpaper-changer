@@ -1,6 +1,5 @@
 package main
 
-// you need the image package, and a format package for encoding/decoding
 import (
   "bytes"
   "image/jpeg"
@@ -11,6 +10,9 @@ import (
 	"net/http"
   "os"
   "log"
+  "bufio"
+  "image"
+  "strconv"
 )
 
 func toBase64(b []byte) string {
@@ -18,17 +20,16 @@ func toBase64(b []byte) string {
 }
 
 func main() {
-  path := os.Args[1:]
-	// Read the entire file into a byte slice
-	data := resizeImage(path[0])
+  ARGS := os.Args[1:]
+  path := ARGS[0]
+  width, _ := strconv.ParseUint(ARGS[1], 10, 32)
+
+	data := resizeImage(path, uint(width))
 
 	var base64Encoding string
 
-	// Determine the content type of the image file
 	mimeType := http.DetectContentType(data)
 
-	// Prepend the appropriate URI scheme header depending
-	// on the MIME type
 	switch mimeType {
 	case "image/jpeg":
 		base64Encoding += "data:image/jpeg;base64,"
@@ -36,26 +37,38 @@ func main() {
 		base64Encoding += "data:image/png;base64,"
 	}
 
-	// Append the base64 encoded output
 	base64Encoding += toBase64(data)
 
-	// Print the full base64 representation of the image
 	fmt.Println(base64Encoding)
 }
 
-func resizeImage(path string) []byte {
-  // Decoding gives you an Image.
-  // If you have an io.Reader already, you can give that to Decode
-  // without reading it into a []byte.
+func resizeImage(path string, width uint) []byte {
   input, _ := os.Open(path)
   defer input.Close()
 
-  image, err := png.Decode(input)
+  rdr := bufio.NewReader(input)
+  bts, _ := rdr.Peek(512)
+  mimeType := http.DetectContentType(bts)
+
+  loadedImage, _ := os.Open(path)
+  defer input.Close()
+
+  var image image.Image
+  var err error
+  switch mimeType {
+    case "image/jpeg":
+      image, err = jpeg.Decode(loadedImage)
+      break
+    case "image/png":
+      image, err = png.Decode(loadedImage)
+      break
+	}
+
   if err != nil {
 		log.Fatal(err)
 	}
 
-  newImage := resize.Resize(300, 0, image, resize.Lanczos3)
+  newImage := resize.Resize(width, 0, image, resize.Lanczos3)
 
   buf := new(bytes.Buffer)
   err = jpeg.Encode(buf, newImage, nil)

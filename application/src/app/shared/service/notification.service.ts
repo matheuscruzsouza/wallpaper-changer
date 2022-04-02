@@ -8,10 +8,6 @@ declare const NL_PATH: string;
 })
 export class NotificationService {
 
-  constructor() {
-    Neutralino.init();
-  }
-
   async showNotification(text: string, content: string) {
     await Neutralino.os.execCommand(`gdbus call --session \
     --dest=org.freedesktop.Notifications \

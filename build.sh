@@ -43,11 +43,14 @@ EOL
 
 cp resources/assets/icons/appIcon.png dist/${project_title}/${project_title}.png
 
-echo "\n$(tput setaf 2)[Stage 6 - Clear workspace]$(tput sgr0)\n" && \
+echo "\n$(tput setaf 2)[Stage 6 - Build additional programs]$(tput sgr0)\n" && \
+go build -o dist/${project_title}/resize ./resources/assets/main.go
+
+echo "\n$(tput setaf 2)[Stage 7 - Clear workspace]$(tput sgr0)\n" && \
 rm -rf ./resources
 
-echo "\n$(tput setaf 2)[Stage 7 - Copy the storage]$(tput sgr0)\n"
+echo "\n$(tput setaf 2)[Stage 8 - Copy the storage]$(tput sgr0)\n"
 if [ -d "$PWD/.storage/" ]; then
-    echo "\n$(tput setaf 2)[Stage 7.1 - Copy storage folder]$(tput sgr0)\n"
+    echo "\n$(tput setaf 2)[Stage 8.1 - Copy storage folder]$(tput sgr0)\n"
     cp -R .storage/ dist/${project_title}/.storage/
 fi
