@@ -17,7 +17,6 @@ export class WallpaperChangerService {
   private currentWallpaper = 0
 
   private images: any[] = [];
-  private reader = new FileReader();
   private loader = new EventEmitter();
   private wasCalled = false;
 
@@ -32,49 +31,48 @@ export class WallpaperChangerService {
     setTimeout(() => {
       this.notificationService.showNotification("wallpaper changer", "The wallpaper will change at every 60 secs.");
 
-      let i = 0;
+      this.readAllImages(PATH);
+    }, 1000);
 
-      Neutralino.filesystem.readDirectory(PATH).then((entries: any[]) => {
-        entries
-          .filter((item: any) => item.entry.length > 2)
-          .forEach((item, index) => this.images.push({
-            path: PATH + "/" + item.entry,
-            name: item.entry,
-            index,
-          }));
+  }
 
-        this.imagePreview(this.images, 0);
+  readAllImages(path: string) {
+    Neutralino.filesystem.readDirectory(path).then((entries: any[]) => {
+      entries
+        .filter((item: any) => item.entry.length > 2)
+        .forEach((item, index) => this.images.push({
+          path: path + "/" + item.entry,
+          name: item.entry,
+          index,
+        }));
 
-        this.wallpapers = [...this.images];
-        this.wallpapers.sort(() => 0.5 - Math.random());
-      });
+      this.imagePreview(this.images, 0);
 
-      this.loader.subscribe((next: number) => {
-        this.imagePreview(this.images, next);
-      });
+      this.wallpapers = [...this.images];
+      this.wallpapers.sort(() => 0.5 - Math.random());
+    });
 
-      this.autoChangeWallpaper();
+    this.loader.subscribe((next: number) => {
+      this.imagePreview(this.images, next);
+    });
 
-    }, 1 * 1000);
+    this.autoChangeWallpaper();
   }
 
   async imagePreview(array: any[], index: number) {
     const path = array[index].path;
-    const wrapper = document.getElementById('images');
+    const object = array[index];
+
+    const folderName = path.split('/').reverse()[1];
+    const imageName = path.split('/').reverse()[0].split('.')[0];
 
     try {
-      let data = await Neutralino.storage.getData(path.split('/').reverse()[0].split('.')[0]);
+      let data = await Neutralino.storage.getData(folderName + "_" + imageName);
 
       if (data) {
-        const image = document.createElement('img');
-        image.onload = () => wrapper?.appendChild(image);
-        array[index].base64 = data;
-        image.onclick = () => { this.selectedImage.emit(array[index]) };
-        image.classList.add("add-margin");
-        image.style.margin="0 5px";
-        image.src = data;
-
         console.log("LOADED BY STORAGE");
+
+        this.createImage(data, object);
 
         this.callNext(index);
 
@@ -85,28 +83,39 @@ export class WallpaperChangerService {
 
       console.log("NOT LOADED BY STORAGE");
 
-      this.resizeMe(wrapper, path, index, array[index]);
+      const dataURL = await this.loadImage(path);
 
+      if (dataURL) {
+        this.createImage(dataURL, object);
+
+        Neutralino.storage.setData(folderName + "_" + imageName, dataURL);
+      }
+
+      this.callNext(index);
     }
 
   }
 
-  async resizeMe(wrapper: any, path: string, index: number, object: any) {
-
+  createImage(data: string, object: any): HTMLImageElement {
+    const wrapper = document.getElementById('images');
     const image = document.createElement('img');
-    const dataURL = await this.loadImage(path);
-    object.base64 = dataURL;
-    image.onload = () => wrapper?.appendChild(image);
-    image.onclick = () => { this.selectedImage.emit(object) };
-    image.classList.add("add-margin");
-    image.style.margin="0 5px";
-    image.width = 200;
-    image.src = dataURL;
 
-    Neutralino.storage.setData(path.split('/').reverse()[0].split('.')[0], dataURL);
+    // Add preview image to object
+    object.preview = data;
 
-    this.callNext(index);
+    // Add preview to screen
+    image.onload = () => {
+      wrapper?.appendChild(image);
+    };
 
+    // Select image
+    image.onclick = () => {
+      this.selectedImage.emit(object);
+    };
+
+    image.src = data;
+
+    return image;
   }
 
   async loadImage(path: string, quality: number = 200) {
