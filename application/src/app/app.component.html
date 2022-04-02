@@ -5,5 +5,6 @@
     <div (click)="setSelectedImage(null)">X</div>
     <img [src]="selectedImage?.original" alt="" style="height: 100%; max-height: 80vh;">
   </div>
-  <div id="images" class="image-grid" (wheel)="horizontalScroll($event)" [ngClass]="{'grid-template-1': selectedImage != null, 'grid-template-6': selectedImage == null}"></div>
+  <div id="images" class="image-grid" (wheel)="horizontalScroll($event)"
+    [ngClass]="{'grid-template-1': selectedImage != null, 'grid-template-6': selectedImage == null}"></div>
 </div>

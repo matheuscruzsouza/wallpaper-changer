@@ -1,4 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
+import { CoreService } from './core.service';
 import { WallpaperChangerService } from './wallpaper-changer.service';
 
 declare const Neutralino: any;
@@ -25,18 +26,22 @@ export class TrayMenuService {
     ],
   };
 
-  constructor(private wallpaperChangerService: WallpaperChangerService) {
-    Neutralino.init();
+  constructor(private coreService: CoreService, private wallpaperChangerService: WallpaperChangerService) {
 
-    Neutralino.events.on("trayMenuItemClicked", (event: any) => {
+    this.coreService.trayMenu.itemClicked.subscribe( (event: any) => {
       this.onTrayMenuItemClicked(event, this.trayMenu.menuItems)
     });
-    Neutralino.events.on("windowClose", this.onWindowClose);
-    Neutralino.events.on("ready", () => {
+
+    this.coreService.window.closed.subscribe(() => {
+      this.onWindowClose()
+    });
+
+    this.coreService.ready.subscribe(() => {
       if (NL_OS != "Darwin") {
         this.setTray();
       }
     });
+
   }
 
   setTray() {
