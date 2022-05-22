@@ -1,18 +1,19 @@
 package main
 
 import (
-  "bytes"
-  "image/jpeg"
-  "image/png"
-  "github.com/nfnt/resize"
-  "encoding/base64"
+	"bufio"
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"log"
 	"net/http"
-  "os"
-  "log"
-  "bufio"
-  "image"
-  "strconv"
+	"os"
+	"strconv"
+
+	"github.com/nfnt/resize"
 )
 
 func toBase64(b []byte) string {
@@ -20,9 +21,12 @@ func toBase64(b []byte) string {
 }
 
 func main() {
-  ARGS := os.Args[1:]
-  path := ARGS[0]
-  width, _ := strconv.ParseUint(ARGS[1], 10, 32)
+	ARGS := os.Args[1:]
+	path := ARGS[0]
+	width, err := strconv.ParseUint(ARGS[1], 10, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	data := resizeImage(path, uint(width))
 
@@ -43,38 +47,36 @@ func main() {
 }
 
 func resizeImage(path string, width uint) []byte {
-  input, _ := os.Open(path)
-  defer input.Close()
+	input, _ := os.Open(path)
+	defer input.Close()
 
-  rdr := bufio.NewReader(input)
-  bts, _ := rdr.Peek(512)
-  mimeType := http.DetectContentType(bts)
+	rdr := bufio.NewReader(input)
+	bts, _ := rdr.Peek(512)
+	mimeType := http.DetectContentType(bts)
 
-  loadedImage, _ := os.Open(path)
-  defer input.Close()
+	loadedImage, _ := os.Open(path)
+	defer input.Close()
 
-  var image image.Image
-  var err error
-  switch mimeType {
-    case "image/jpeg":
-      image, err = jpeg.Decode(loadedImage)
-      break
-    case "image/png":
-      image, err = png.Decode(loadedImage)
-      break
+	var image image.Image
+	var err error
+	switch mimeType {
+	case "image/jpeg":
+		image, err = jpeg.Decode(loadedImage)
+	case "image/png":
+		image, err = png.Decode(loadedImage)
 	}
 
-  if err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 
-  newImage := resize.Resize(width, 0, image, resize.Lanczos3)
+	newImage := resize.Resize(width, 0, image, resize.Lanczos3)
 
-  buf := new(bytes.Buffer)
-  err = jpeg.Encode(buf, newImage, nil)
-  if err != nil {
+	buf := new(bytes.Buffer)
+	err = jpeg.Encode(buf, newImage, nil)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-  return buf.Bytes()
+	return buf.Bytes()
 }

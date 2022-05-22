@@ -4,6 +4,41 @@ import { NotificationService } from './notification.service';
 declare const Neutralino: any;
 declare const NL_PATH: string;
 
+class Timer {
+  private timerObj: number | undefined;
+  private time: number;
+  private fn: Function;
+
+  constructor(fn: Function, time: number) {
+    this.timerObj = setInterval(fn, time);
+    this.time = time;
+    this.fn = fn;
+  }
+
+  public stop = () => {
+    if (this.timerObj) {
+      clearInterval(this.timerObj);
+      this.timerObj = undefined;
+    }
+    return this;
+  }
+
+  // start timer using current settings (if it's not already running)
+  public start = () => {
+    if (!this.timerObj) {
+      this.stop();
+      this.timerObj = setInterval(this.fn, this.time);
+    }
+    return this;
+  }
+
+  // start with new or original interval, stop current interval
+  public reset = (newT: number) => {
+    this.time = newT;
+    return this.stop().start();
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -20,6 +55,8 @@ export class WallpaperChangerService {
   private loader = new EventEmitter();
   private wasCalled = false;
 
+  private timer: Timer | undefined;
+
   constructor(private notificationService: NotificationService) {}
 
   loadFolder(PATH: string) {
@@ -32,11 +69,15 @@ export class WallpaperChangerService {
       this.notificationService.showNotification("wallpaper changer", "The wallpaper will change at every 60 secs.");
 
       this.readAllImages(PATH);
+
+      this.updateWallpaper();
     }, 1000);
 
   }
 
   readAllImages(path: string) {
+    console.log("PATH");
+
     Neutralino.filesystem.readDirectory(path).then((entries: any[]) => {
       entries
         .filter((item: any) => item.entry.length > 2)
@@ -138,17 +179,34 @@ export class WallpaperChangerService {
 
       this.setAsWallpaper(this.wallpapers[index].path);
 
+      this.timer?.reset(60 * 1000);
+
       setTimeout(() => { this.wasCalled = false; }, 1000);
     }
   }
 
   autoChangeWallpaper() {
-    setInterval(() => {
-      this.setRandomWallpaper();
-    }, 60 * 1000);
+    this.timer = new Timer(() => { this.setRandomWallpaper() }, 60 * 1000);
   }
 
   async setAsWallpaper(path: string) {
     await Neutralino.os.execCommand(`gsettings set org.gnome.desktop.background picture-uri "${path}"`, { background: true });
+
+    this.updateWallpaper();
+  }
+
+  async getCurrentWallpaper(): Promise<string> {
+    return Neutralino.os.execCommand(`gsettings get org.gnome.desktop.background picture-uri`, { background: true });
+  }
+
+  private async updateWallpaper() {
+    const currentWallpaperBase64 = await this.loadImage(await this.getCurrentWallpaper(), 1366);
+
+    const body = document.body;
+    body.style.backgroundPosition = "center";
+    body.style.backgroundAttachment = "fixed";
+    body.style.backgroundRepeat = "no-repeat";
+    body.style.backgroundSize = "1366px 768px";
+    body.style.backgroundImage = `url('${currentWallpaperBase64}')`;
   }
 }
