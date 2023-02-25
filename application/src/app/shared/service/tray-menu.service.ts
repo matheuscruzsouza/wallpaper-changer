@@ -1,4 +1,4 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { CoreService } from './core.service';
 import { WallpaperChangerService } from './wallpaper-changer.service';
 

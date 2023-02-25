@@ -30,7 +30,9 @@
               "src/favicon.ico",
               "src/assets",
               "src/neutralino.js",
-              "src/tray-menu.js"
+              "src/tray-menu.js",
+              "src/aboutWindow.html",
+              "src/extensions"
             ],
             "styles": ["src/styles.scss"],
             "scripts": []

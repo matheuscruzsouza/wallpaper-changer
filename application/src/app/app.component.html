@@ -1,5 +1,7 @@
 <router-outlet></router-outlet>
 
+<button (click)="onFileUpload()">Open</button>
+
 <div class="wrapper" [ngClass]="{'selectedImage': selectedImage != null}">
   <div class="image-display" *ngIf="selectedImage">
     <div (click)="setSelectedImage(null)">X</div>

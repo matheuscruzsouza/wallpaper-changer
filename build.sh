@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 project_name=`jq -r '.modes .window .title' neutralino.config.json`
 project_title=`jq -r '.cli .binaryName' neutralino.config.json`
@@ -42,6 +42,8 @@ Icon=${project_folder}/${project_title}.png
 EOL
 
 cp resources/assets/icons/appIcon.png dist/${project_title}/${project_title}.png
+
+cp -r resources/extensions dist/${project_title}/extensions
 
 echo "\n$(tput setaf 2)[Stage 6 - Build additional programs]$(tput sgr0)\n" && \
 go build -o dist/${project_title}/resize ./resources/assets/main.go

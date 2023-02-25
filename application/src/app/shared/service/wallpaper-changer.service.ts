@@ -108,7 +108,7 @@ export class WallpaperChangerService {
     const imageName = path.split('/').reverse()[0].split('.')[0];
 
     try {
-      let data = await Neutralino.storage.getData(folderName + "_" + imageName);
+      const data = await Neutralino.storage.getData(folderName + "_" + imageName);
 
       if (data) {
         console.log("LOADED BY STORAGE");
@@ -120,7 +120,7 @@ export class WallpaperChangerService {
         return;
       }
 
-    } catch (error) {
+    } catch (_error) {
 
       console.log("NOT LOADED BY STORAGE");
 
@@ -159,7 +159,7 @@ export class WallpaperChangerService {
     return image;
   }
 
-  async loadImage(path: string, quality: number = 200) {
+  loadImage(path: string, quality = 200) {
     return Neutralino.os.execCommand(NL_PATH + `/resize ${path} ${quality}`, { background: true });
   }
 
@@ -169,7 +169,7 @@ export class WallpaperChangerService {
     }
   }
 
-  setRandomWallpaper(direction: number = 1) {
+  setRandomWallpaper(direction = 1) {
     if (!this.wasCalled) {
       this.wasCalled = true;
 
@@ -195,7 +195,7 @@ export class WallpaperChangerService {
     this.updateWallpaper();
   }
 
-  async getCurrentWallpaper(): Promise<string> {
+  getCurrentWallpaper(): Promise<string> {
     return Neutralino.os.execCommand(`gsettings get org.gnome.desktop.background picture-uri`, { background: true });
   }
 

@@ -5,11 +5,15 @@
   "url": "/resources/",
   "enableServer": true,
   "enableNativeAPI": true,
+  "enableExtensions": true,
   "logging": {
-    "enabled": true,
-    "writeToLogFile": true
+    "enabled": false,
+    "writeToLogFile": false
   },
   "nativeBlockList": [],
+  "nativeAllowList": [
+    "os.*"
+  ],
   "globalVariables": {
     "DESKTOP_TEMPLATE_APP": "1.0.0.0"
   },
@@ -29,31 +33,19 @@
       "hidden": false,
       "resizable": true,
       "exitProcessOnClose": false
-    },
-    "browser": {
-      "globalVariables": {
-        "TEST": "Test value browser"
-      },
-      "nativeBlockList": [
-        "filesystem.*"
-      ]
-    },
-    "cloud": {
-      "url": "/resources/#cloud",
-      "nativeAllowList": [
-        "app.*"
-      ]
     }
   },
   "cli": {
     "binaryName": "wallpaper-changer",
     "resourcesPath": "/resources/",
     "clientLibrary": "/resources/neutralino.js",
-    "binaryVersion": "3.0.0",
-    "clientVersion": "2.0.0",
-    "frontendLibrary": {
-      "patchFile": "/application/src/index.html",
-      "devUrl": "http://localhost:4200"
+    "binaryVersion": "4.8.0",
+    "clientVersion": "4.8.0"
+  },
+  "extensions": [
+    {
+      "id": "js.neutralino.filesaver",
+      "command": "/usr/bin/python3 ${NL_PATH}/extensions/py-dialog.py"
     }
-  }
+  ]
 }
